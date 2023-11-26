@@ -31,15 +31,65 @@ async function run() {
 
     const contestCollections = client.db("contestHubDB").collection("users");
 
-
-    app.get('/contest', async(req, res) => {
-        const cursor = contestCollections.find();
+    // for home page popular item
+    app.get('/popular', async(req, res) => {
+      const filter = req.query;
+      // console.log(filter);
+      const query = {
+        type: {$regex: filter.search, $options: 'i'}
+      }
+      const  options = {
+        sort: {
+          attemptedCount: filter.sort === 'asc' ? 1 : -1
+        }
+      }
+        const cursor = contestCollections.find(query, options);
         const result = await cursor.toArray();
         res.send(result);
     })
+
+    app.get("/contest", async (req, res) => {
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      let queryObj = {}
+      let sortObj = {};
+     //  const category = req.query.category;
+      const email = req.query.email;
+      const sortField = req.query.sortField;
+      const sortOrder = req.query.sortOrder;
+      if(email){
+       queryObj.email = email
+      }
+      if(sortField && sortOrder){
+        sortObj[sortField] = sortOrder;
+      }
+      const result = await contestCollections
+        .find(queryObj).sort(sortObj)
+        .skip(page * size)
+        .limit(size)
+        .toArray();
+     res.send(result);
+   });
+
+    app.get('/contest/:type', async(req, res) => {
+        const type = req.params.type;
+        const lowerType = new RegExp(type, "i");
+        let data = {
+          $or: [
+            {
+              type: lowerType,
+            },
+          ],
+        };
+        const cursor = contestCollections.find(data);
+        const result = await cursor.toArray();
+        res.send(result);
+    })
+
     app.get('/contest/:id', async(req, res) => {
         const id = req.params.id;
         const query = {_id: new ObjectId(id)};
+        console.log(query);
         const result = await contestCollections.findOne(query);
         res.send(result);
     })
