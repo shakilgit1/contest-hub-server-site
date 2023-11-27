@@ -213,7 +213,7 @@ async function run() {
     })
 
     // creator add item
-    app.post('/contest', verifyToken, async(req, res) => {
+    app.post('/contest', verifyToken, verifyCreator, async(req, res) => {
       const item = req.body;
       const result = await contestCollections.insertOne(item);
       res.send(result);
