@@ -4,7 +4,8 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -28,7 +29,8 @@ async function run() {
 
     const contestCollections = client.db("contestHubDB").collection("contest");
     const userCollections = client.db("contestHubDB").collection("users");
-    // console.log(process.env.ACCESS_TOKEN_SECRET);
+    const paymentCollection = client.db("contestHubDB").collection("payments");
+   
 
     // jwt
     app.post("/jwt", async (req, res) => {
@@ -97,7 +99,7 @@ async function run() {
     app.get("/contest/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      console.log(query);
+      // console.log(query);
       const result = await contestCollections.findOne(query);
       res.send(result);
     });
@@ -268,7 +270,38 @@ async function run() {
       res.send(result);
    })
 
-   
+    // payment 
+    app.post('/create-payment-intent', async(req, res) => {
+      const {price} = req.body;
+      const amount = parseInt(price * 100);
+    
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret
+      })
+    })
+
+    app.get('/payments/:email', async(req, res) => {
+      const query = {email: req.params.email};
+      // if(req.params.email !== req.decoded.email){
+      //   return res.status(403).send({message: 'forbidden access'});
+      // }
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    app.post('/payments', async(req, res) => {
+       const payment = req.body;
+       const paymentResult = await paymentCollection.insertOne(payment);
+       
+      res.send(paymentResult);
+
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
