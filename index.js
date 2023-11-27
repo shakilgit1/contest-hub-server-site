@@ -224,6 +224,28 @@ async function run() {
       const result = await contestCollections.deleteOne(query);
       res.send(result);
     })
+
+    app.patch('/contest/:id', async(req, res) => {
+      const item = req.body;
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updatedDoc = {
+        $set: {
+          contestName: item.contestName,
+          type: item.type,
+          contestPrize: item.contestPrize,
+          price: item.price,
+          shortDescription: item.shortDescription,
+          deadline: item.deadline,
+          task: item.task,
+          attemptedCount: item.attemptedCount,
+          status: item.status,
+          image: item.image
+        }
+      }
+      const result = await contestCollections.updateOne(filter, updatedDoc);
+      res.send(result);
+   })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
