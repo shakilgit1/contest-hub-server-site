@@ -218,10 +218,16 @@ async function run() {
       const result = await contestCollections.insertOne(item);
       res.send(result);
     })
-    app.delete('/contest/:id', async(req, res) => {
+    app.delete('/contest/:id',verifyToken, async(req, res) => {
       const id = req.params.id;
       const query = {_id: new ObjectId(id)};
       const result = await contestCollections.deleteOne(query);
+      res.send(result);
+    })
+    app.get('/contest', async(req, res) => {
+      const email = req.query.email;
+      const query = {email: email};
+      const result = await contestCollections.find(query).toArray();
       res.send(result);
     })
 
@@ -246,6 +252,24 @@ async function run() {
       const result = await contestCollections.updateOne(filter, updatedDoc);
       res.send(result);
    })
+
+    app.patch('/confirm/:id', async(req, res) => {
+      // const item = req.body;
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updatedDoc = {
+        $set: {
+
+         status: 'accepted',
+
+        }
+      }
+      const result = await contestCollections.updateOne(filter, updatedDoc);
+      res.send(result);
+   })
+
+   
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
