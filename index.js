@@ -211,6 +211,19 @@ async function run() {
       const result = await userCollections.deleteOne(query);
       res.send(result);
     })
+
+    // creator add item
+    app.post('/contest', verifyToken, async(req, res) => {
+      const item = req.body;
+      const result = await contestCollections.insertOne(item);
+      res.send(result);
+    })
+    app.delete('/contest/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await contestCollections.deleteOne(query);
+      res.send(result);
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
