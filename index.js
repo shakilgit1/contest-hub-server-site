@@ -294,6 +294,11 @@ async function run() {
       const result = await paymentCollection.find(query).toArray();
       res.send(result);
     })
+    app.get('/payments', async(req, res) => {
+      const allData = req.body;
+      const result = await paymentCollection.find(allData).toArray();
+      res.send(result);
+    })
 
     app.post('/payments', async(req, res) => {
        const payment = req.body;
