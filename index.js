@@ -286,19 +286,25 @@ async function run() {
       })
     })
 
-    app.get('/payments/:email', async(req, res) => {
-      const query = {email: req.params.email};
+    app.get('/payments', async(req, res) => {
+      const query = {email: req.query.email};
       // if(req.params.email !== req.decoded.email){
       //   return res.status(403).send({message: 'forbidden access'});
       // }
       const result = await paymentCollection.find(query).toArray();
       res.send(result);
     })
-    app.get('/payments', async(req, res) => {
-      const allData = req.body;
-      const result = await paymentCollection.find(allData).toArray();
+    app.get('/payments/:email', async(req, res) => {
+      const query = {userEmail: req.params.email};
+      const result = await paymentCollection.find(query).toArray();
       res.send(result);
     })
+
+    // app.get('/payments', async(req, res) => {
+    //   const allData = req.body;
+    //   const result = await paymentCollection.find().toArray();
+    //   res.send(result);
+    // })
 
     app.post('/payments', async(req, res) => {
        const payment = req.body;
