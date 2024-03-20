@@ -82,10 +82,16 @@ async function run() {
 
     app.get("/popular", async (req, res) => {
       const filter = req.query;
+      const type = req.query.type;
       // console.log(filter);
-      const query = {
-        type: { $regex: filter.search, $options: "i" },
-      };
+      let query = {};
+
+      if(filter.search){
+        query = {
+              contestName: { $regex: filter.search, $options: "i" },
+            };
+      }
+     
       const options = {
         sort: {
           attemptedCount: filter.sort === "asc" ? 1 : -1,
@@ -104,21 +110,24 @@ async function run() {
       res.send(result);
     });
 
+    // all contest 
+
     app.get("/contest", async (req, res) => {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
       let queryObj = {};
       let sortObj = {};
-      //  const category = req.query.category;
-      const email = req.query.email;
-      const sortField = req.query.sortField;
-      const sortOrder = req.query.sortOrder;
-      if (email) {
-        queryObj.email = email;
+
+       const type = req.query.type;
+      // const email = req.query.email;
+      // const sortField = req.query.sortField;
+      // const sortOrder = req.query.sortOrder;
+      if (type) {
+        queryObj = {type: type}
       }
-      if (sortField && sortOrder) {
-        sortObj[sortField] = sortOrder;
-      }
+      // if (sortField && sortOrder) {
+      //   sortObj[sortField] = sortOrder;
+      // }
       const result = await contestCollections
         .find(queryObj)
         .sort(sortObj)
